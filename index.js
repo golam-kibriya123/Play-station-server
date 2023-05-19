@@ -6,7 +6,7 @@ require('dotenv').config()
 
 
 // database
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.m5bylxu.mongodb.net/?retryWrites=true&w=majority`;
 // middleware
 app.use(cors());
@@ -35,11 +35,18 @@ async function run() {
 
         const toysCollection = client.db('playStation').collection('toys');
 
-        app.get('/toy', async (req, res) => {
+        app.get('/toys', async (req, res) => {
             const cursor = toysCollection.find()
             const result = await cursor.toArray();
             res.send(result)
         });
+        app.get('/toys/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const cursor = toysCollection.find(query);
+            const result = await cursor.toArray();
+            res.send(result)
+        })
         app.get('/hot', async (req, res) => {
             const query = { hot: "hot" }
             const cursor = toysCollection.find(query)
