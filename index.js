@@ -40,7 +40,25 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result)
         });
- 
+        app.get('/hot', async (req, res) => {
+            const query = { hot: "hot" }
+            const cursor = toysCollection.find(query)
+            const result = await cursor.toArray();
+            res.send(result)
+        });
+        app.get('/best', async (req, res) => {
+            const query = { rating: { $gt: 4 } };
+            const cursor = toysCollection.find(query);
+            const result = await cursor.toArray();
+            res.send(result);
+        });
+        app.get('/category/:sub', async (req, res) => {
+            const subCategory = req.params.sub
+            const query = { sub_category: `${subCategory}` };
+            const cursor = toysCollection.find(query);
+            const result = await cursor.toArray();
+            res.send(result)
+        })
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
