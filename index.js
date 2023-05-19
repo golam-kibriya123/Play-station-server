@@ -15,6 +15,7 @@ app.use(express.json());
 app.get('/', (req, res) => {
     res.send(`the play station server is running on`)
 });
+;
 
 
 
@@ -32,13 +33,14 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
 
-        const database = client.db("DB").collection("play");
-        app.get('/toys', async (req, res) => {
-            res.send('ok')
-        })
+        const toysCollection = client.db('playStation').collection('toys');
 
-
-
+        app.get('/toy', async (req, res) => {
+            const cursor = toysCollection.find()
+            const result = await cursor.toArray();
+            res.send(result)
+        });
+ 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
