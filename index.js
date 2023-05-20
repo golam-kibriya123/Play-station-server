@@ -3,7 +3,7 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 5000;
 require('dotenv').config()
-
+const data = require('./data.json')
 
 // database
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -32,8 +32,8 @@ const client = new MongoClient(uri, {
 });
 async function run() {
     try {
-
-        const toysCollection = client.db('playStation').collection('toys');
+        await client.connect();
+        const toysCollection = client.db('playStationDB').collection('toyStore');
 
         app.get('/toys', async (req, res) => {
             const cursor = toysCollection.find()
@@ -63,7 +63,8 @@ async function run() {
             const subCategory = req.params.sub
             const query = { sub_category: `${subCategory}` };
             const cursor = toysCollection.find(query);
-            const result = await cursor.toArray();
+            const result = await cursor.toArray()
+
             res.send(result)
         })
         // Send a ping to confirm a successful connection
@@ -71,7 +72,7 @@ async function run() {
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
-        await client.close();
+        // await client.close();
     }
 }
 run().catch(console.dir);
