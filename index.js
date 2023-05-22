@@ -32,7 +32,7 @@ const client = new MongoClient(uri, {
 });
 async function run() {
     try {
-        await client.connect();
+        client.connect();
         const toysCollection = client.db('playStationDB').collection('toyStore');
 
         app.get('/toys', async (req, res) => {
@@ -46,7 +46,8 @@ async function run() {
             const cursor = toysCollection.find(query);
             const result = await cursor.toArray();
             res.send(result)
-        })
+        });
+
         app.get('/hot', async (req, res) => {
             const query = { hot: "hot" }
             const cursor = toysCollection.find(query)
@@ -66,6 +67,45 @@ async function run() {
             const result = await cursor.toArray()
 
             res.send(result)
+        });
+        app.post('/toys', async (req, res) => {
+            const newToy = req.body;
+            const result = await toysCollection.insertOne(newToy);
+            res.send(result)
+            console.log(newToy)
+
+        });
+        app.get('/user/:name', async (req, res) => {
+            const userCode = req.params.name;
+            const query = { user_code: `${userCode}` };
+            const cursor = toysCollection.find(query);
+            const result = await cursor.toArray();
+            res.send(result);
+
+        });
+        app.put('/toys/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updatedToy = req.body;
+            const update = {
+                $set: {
+                    details: updatedToy.details,
+                    quantity: updatedToy.quantity,
+                    price: updatedToy.price
+
+                }
+            };
+            const result = await toysCollection.updateOne(query, update, options)
+
+
+        });
+        app.delete('/user/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await toysCollection.deleteOne(query);
+            res.send(result)
+
         })
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
