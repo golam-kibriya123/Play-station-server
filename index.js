@@ -4,13 +4,13 @@ const app = express();
 const port = process.env.PORT || 5000;
 require('dotenv').config()
 const data = require('./data.json')
+// middleware
+app.use(cors());
+app.use(express.json());
 
 // database
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.m5bylxu.mongodb.net/?retryWrites=true&w=majority`;
-// middleware
-app.use(cors());
-app.use(express.json());
 
 app.get('/', (req, res) => {
     res.send(`the play station server is running on`)
@@ -35,8 +35,13 @@ async function run() {
         client.connect();
         const toysCollection = client.db('playStationDB').collection('toyStore');
 
-        app.get('/toys', async (req, res) => {
+        app.get('/all', async (req, res) => {
             const cursor = toysCollection.find()
+            const result = await cursor.toArray();
+            res.send(result)
+        });
+        app.get('/toys', async (req, res) => {
+            const cursor = toysCollection.find().limit(20)
             const result = await cursor.toArray();
             res.send(result)
         });
@@ -78,14 +83,33 @@ async function run() {
         app.get('/user/:name', async (req, res) => {
             const userCode = req.params.name;
             const query = { user_code: `${userCode}` };
-            const cursor = toysCollection.find(query);
+            const cursor = toysCollection.find(query).sort({ "price": 1 });
             const result = await cursor.toArray();
             res.send(result);
 
         });
-        app.put('/toys/:id', async (req, res) => {
+        // app.put('/user/:id', async (req, res) => {
+        //     const id = req.params.id;
+        //     const filter = { _id: new ObjectId(id) };
+        //     const options = { upsert: true };
+        //     const updatedToy = req.body;
+        //     const update = {
+        //         $set: {
+        //             details: updatedToy.details,
+        //             quantity: updatedToy.quantity,
+        //             price: updatedToy.price
+
+        //         }
+        //     };
+        //     const result = await toysCollection.updateOne(filter, update, options);
+        //     res.send(result);
+
+
+        // });
+
+        app.put('/user/:id', async (req, res) => {
             const id = req.params.id;
-            const query = { _id: new ObjectId(id) };
+            const filter = { _id: new ObjectId(id) };
             const options = { upsert: true };
             const updatedToy = req.body;
             const update = {
@@ -93,13 +117,13 @@ async function run() {
                     details: updatedToy.details,
                     quantity: updatedToy.quantity,
                     price: updatedToy.price
-
                 }
-            };
-            const result = await toysCollection.updateOne(query, update, options)
+            }
+            const result = await coffeeCollection.updateOne(filter, update, options);
+            res.send(result)
+        })
 
 
-        });
         app.delete('/user/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
